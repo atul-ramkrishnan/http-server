@@ -21,8 +21,8 @@ def main():
             headers = f"Content-Type: text/plain\r\nContent-Length: {len(response_body)}\r\n"
         elif path == "/user-agent":
             status_line = 'HTTP/1.1 200 OK\r\n'
-            headers = "Content-Type: text/plain\r\n"
             response_body = data.split("User-Agent: ")[1].split("\r\n")[0]
+            headers = f"Content-Type: text/plain\r\nContent-Length: {len(response_body)}\r\n"            
         else:
             status_line = 'HTTP/1.1 404 Not Found\r\n'
         response = status_line + headers + "\r\n" + response_body
