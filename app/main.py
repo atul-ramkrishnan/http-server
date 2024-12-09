@@ -12,7 +12,6 @@ def main():
         response_body = ""
         data = connection.recv(1024).decode() # receive data
         path = data.split()[1] # get path from request
-
         if path == "/":
             status_line = 'HTTP/1.1 200 OK\r\n'
             headers = "Content-Type: text/html\r\n"
@@ -20,8 +19,11 @@ def main():
             status_line = 'HTTP/1.1 200 OK\r\n'
             response_body = path.split("/echo/")[1]
             headers = f"Content-Type: text/plain\r\nContent-Length: {len(response_body)}\r\n"
+        elif path == "/user-agent":
+            status_line = 'HTTP/1.1 200 OK\r\n'
+            headers = "Content-Type: text/plain\r\n"
+            response_body = data.split("User-Agent: ")[1].split("\r\n")[0]
         else:
-            # connection.sendall('HTTP/1.1 404 Not Found\r\n\r\n'.encode())
             status_line = 'HTTP/1.1 404 Not Found\r\n'
         response = status_line + headers + "\r\n" + response_body
         connection.sendall(response.encode())
