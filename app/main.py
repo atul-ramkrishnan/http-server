@@ -31,7 +31,7 @@ def main():
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     while True:
         connection, address = server_socket.accept() # wait for client
-        client_thread = threading.Thread(target=handle_client, args=(connection))
+        client_thread = threading.Thread(target=handle_client, args=(connection, ))
         client_thread.start()
 
 if __name__ == "__main__":
