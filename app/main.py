@@ -1,8 +1,9 @@
 import socket
 import threading
+import argparse
+import os
 
-
-def handle_client(connection):
+def handle_client(connection, args):
     status_line = ""
     headers = ""
     response_body = ""
@@ -15,6 +16,15 @@ def handle_client(connection):
         status_line = 'HTTP/1.1 200 OK\r\n'
         response_body = path.split("/echo/")[1]
         headers = f"Content-Type: text/plain\r\nContent-Length: {len(response_body)}\r\n"
+    elif path.startswith("/file"):
+        file_path = args.directory + path.split("/files")[1]
+        try:
+            with open(file_path, "r") as file:
+                status_line = 'HTTP/1.1 200 OK\r\n'
+                response_body = file.read()
+                headers = f"Content-Type: application/octet-stream\r\nContent-Length: {os.path.getsize(file_path)}\r\n"
+        except FileNotFoundError:
+            status_line = 'HTTP/1.1 404 Not Found\r\n'
     elif path == "/user-agent":
         status_line = 'HTTP/1.1 200 OK\r\n'
         response_body = data.split("User-Agent: ")[1].split("\r\n")[0]
@@ -26,13 +36,18 @@ def handle_client(connection):
     connection.close()
 
 def main():
-    print("Logs from your program will appear here!")
-
+    print("Server is running on localhost:4221")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--directory', type=str, default=".")
+    args = parser.parse_args()
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    while True:
-        connection, address = server_socket.accept() # wait for client
-        client_thread = threading.Thread(target=handle_client, args=(connection, ))
-        client_thread.start()
-
+    try:
+        while True:
+            connection, address = server_socket.accept() # wait for client
+            client_thread = threading.Thread(target=handle_client, args=(connection, args))
+            client_thread.start()
+    except KeyboardInterrupt:
+        print("Server is shutting down")
+        server_socket.close()
 if __name__ == "__main__":
     main()
