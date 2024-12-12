@@ -6,12 +6,14 @@ class HttpResponse:
         self.headers = headers or {}
 
         # Ensure the body is in bytes
-        if isinstance(body, str):
+        if body is None:
+            self.body = b""  # Allow empty body
+        elif isinstance(body, str):
             self.body = body.encode("utf-8")  # Convert string to bytes
         elif isinstance(body, bytes):
             self.body = body  # Keep bytes as-is
         else:
-            raise TypeError("Body must be a string or bytes")
+            raise TypeError("Body must be a string, bytes, or None")
 
         # Set Content-Length based on byte length
         self.headers["Content-Length"] = str(len(self.body))
@@ -39,14 +41,14 @@ if __name__ == "__main__":
     string_body = "<html><body><h1>Hello, world!</h1></body></html>"
     string_response = HttpResponse(body=string_body)
     
-    # When sending, use get_full_response()
-    full_response = string_response.get_full_response()
-    print(full_response)
+    # Get the full response
+    full_response = string_response.build_response()
+    print(full_response.decode("utf-8"))  # Decode for readability
     
     # Gzip compressed body example
     import gzip
     compressed_body = gzip.compress(string_body.encode('utf-8'))
     compressed_response = HttpResponse(body=compressed_body, 
                                        headers={'Content-Encoding': 'gzip'})
-    full_compressed_response = compressed_response.get_full_response()
-    print(full_compressed_response)
+    full_compressed_response = compressed_response.build_response()
+    print(full_compressed_response)  # This will print binary data
