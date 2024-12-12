@@ -26,11 +26,11 @@ def handle_get_request(request, args):
                                 headers=response_headers)
     elif request.path.startswith("/files"):
         filePath = args.directory + request.path.split("/files")[1]
-        response_headers["Content-Type"] = "application/octet-stream"
-        response_headers["Content-Length"] = str(os.path.getsize(filePath))
         try:
             with open(filePath, "r") as file:
                 responseBody = file.read()
+                response_headers["Content-Type"] = "application/octet-stream"
+                response_headers["Content-Length"] = str(os.path.getsize(filePath))
                 response = HttpResponse(status_code=200,
                                         status_message="OK",
                                         body=responseBody,
