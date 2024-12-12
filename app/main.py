@@ -85,7 +85,7 @@ def handle_request(connection, request, args):
     else:
         response = handle_method_not_allowed(request, args)
     
-    connection.sendall(str(response).encode())
+    connection.sendall(response.build_response())
     connection.close()
 
 

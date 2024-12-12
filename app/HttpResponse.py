@@ -1,36 +1,37 @@
 class HttpResponse:
-    def __init__(self, status_code: int = 200, status_message: str = "OK", body: str | bytes = "", headers: dict = None):
+    def __init__(self, status_code: int = 200, status_message: str = "OK", body=None, headers: dict = None):
         self.version = "HTTP/1.1"  # Default HTTP version
         self.status_code = status_code
         self.status_message = status_message
         self.headers = headers or {}
-        
-        # Normalize body to bytes if it's a string
-        self.body = body.encode('utf-8') if isinstance(body, str) else body
-        
+
+        # Ensure the body is in bytes
+        if isinstance(body, str):
+            self.body = body.encode("utf-8")  # Convert string to bytes
+        elif isinstance(body, bytes):
+            self.body = body  # Keep bytes as-is
+        else:
+            raise TypeError("Body must be a string or bytes")
+
         # Set Content-Length based on byte length
         self.headers["Content-Length"] = str(len(self.body))
-        self.headers.setdefault("Content-Type", "text/html; charset=UTF-8")  # Default content type
-    
+        
+        # Set default Content-Type if not already provided
+        self.headers.setdefault("Content-Type", "text/html; charset=UTF-8")
+
     def build_response(self):
         # Construct the response line
         response_line = f"{self.version} {self.status_code} {self.status_message}\r\n"
-        
+
         # Construct the headers
-        headers = ""
-        for key, value in self.headers.items():
-            headers += f"{key}: {value}\r\n"
-        
+        headers = "".join(f"{key}: {value}\r\n" for key, value in self.headers.items())
+
         # Combine response line, headers, and body
-        # Convert to bytes only when sending, not when building
-        full_response = response_line + headers + "\r\n"
-        
-        return full_response, self.body
-    
-    def get_full_response(self):
-        # Method to get the full response as bytes for sending
-        response_str, body = self.build_response()
-        return response_str.encode('utf-8') + body
+        return response_line.encode("utf-8") + headers.encode("utf-8") + b"\r\n" + self.body
+
+    def __str__(self):
+        # Decode for printing (ignoring binary data for human readability)
+        return self.build_response().decode("utf-8", errors="ignore")
 
 # Example Usage:
 if __name__ == "__main__":
