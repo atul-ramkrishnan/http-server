@@ -8,7 +8,7 @@ from .HttpResponse import HttpResponse
 
 def handle_get_request(request, args):
     response_headers = {}
-    if request.headers.get("Accept-Encoding", "") == "gzip":
+    if "gzip" in request.headers.get("Accept-Encoding", ""):
         response_headers["Content-Encoding"] = "gzip"
     response = None
     if request.path == "/":
