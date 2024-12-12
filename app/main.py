@@ -4,7 +4,7 @@ import argparse
 import os
 from .HttpRequest import HttpRequest
 from .HttpResponse import HttpResponse
-
+import gzip
 
 def handle_get_request(request, args):
     response_headers = {}
@@ -18,12 +18,17 @@ def handle_get_request(request, args):
                                 headers=response_headers)
     elif request.path.startswith("/echo"):
         responseBody = request.path.split("/echo/")[1]
+        if response_headers["Content-Encoding"] == "gzip":
+            responseBody = gzip.compress(responseBody.encode())
         response_headers["Content-Type"] = "text/plain"
         response_headers["Content-Length"] = str(len(responseBody))
-        response = HttpResponse(status_code=200,
-                                status_message="OK",
-                                body=responseBody,
-                                headers=response_headers)
+
+        response = HttpResponse(
+            status_code=200,
+            status_message="OK",
+            body=responseBody,
+            headers=response_headers
+        )
     elif request.path.startswith("/files"):
         filePath = args.directory + request.path.split("/files")[1]
         try:
