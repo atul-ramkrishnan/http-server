@@ -18,7 +18,7 @@ def handle_get_request(request, args):
                                 headers=response_headers)
     elif request.path.startswith("/echo"):
         responseBody = request.path.split("/echo/")[1]
-        if response_headers["Content-Encoding"] == "gzip":
+        if response_headers.get("Content-Encoding", "")  == "gzip":
             responseBody = gzip.compress(responseBody.encode())
         response_headers["Content-Type"] = "text/plain"
         response_headers["Content-Length"] = str(len(responseBody))

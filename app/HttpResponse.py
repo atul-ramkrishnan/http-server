@@ -22,37 +22,30 @@ class HttpResponse:
             headers += f"{key}: {value}\r\n"
         
         # Combine response line, headers, and body
-        # Ensure everything is converted to bytes
-        full_response = (response_line + headers + "\r\n").encode('utf-8') + self.body
+        # Convert to bytes only when sending, not when building
+        full_response = response_line + headers + "\r\n"
         
-        return full_response
+        return full_response, self.body
     
-    def __str__(self):
-        # Attempt to decode the response if possible
-        try:
-            return self.build_response().decode('utf-8')
-        except UnicodeDecodeError:
-            # If decoding fails (e.g., for binary data), return a byte representation
-            return str(self.build_response())
+    def get_full_response(self):
+        # Method to get the full response as bytes for sending
+        response_str, body = self.build_response()
+        return response_str.encode('utf-8') + body
 
 # Example Usage:
 if __name__ == "__main__":
     # String body
     string_body = "<html><body><h1>Hello, world!</h1></body></html>"
     string_response = HttpResponse(body=string_body)
-    print("String Body Response:")
-    print(string_response)
     
-    # Bytes body (e.g., compressed or binary content)
-    bytes_body = b"Some compressed or binary content"
-    bytes_response = HttpResponse(body=bytes_body)
-    print("\nBytes Body Response:")
-    print(bytes_response)
+    # When sending, use get_full_response()
+    full_response = string_response.get_full_response()
+    print(full_response)
     
     # Gzip compressed body example
     import gzip
     compressed_body = gzip.compress(string_body.encode('utf-8'))
     compressed_response = HttpResponse(body=compressed_body, 
                                        headers={'Content-Encoding': 'gzip'})
-    print("\nCompressed Body Response:")
-    print(compressed_response)
+    full_compressed_response = compressed_response.get_full_response()
+    print(full_compressed_response)
